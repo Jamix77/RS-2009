@@ -73,7 +73,7 @@ public class SirVantDialogue extends DialoguePlugin {
                 next();
                 break;
             case 4:
-                npc ("It's not as of I woke with a dragon-slaying urge! I", "was on my way through Lumbridge when it started", "attacking. It's a rather larger, three-headed variant. Very", "rare.");
+                npc ("It's not as if I woke with a dragon-slaying urge! I", "was on my way through Lumbridge when it started", "attacking. It's a rather larger, three-headed variant. Very", "rare.");
                 next();
                 break;
             case 5:

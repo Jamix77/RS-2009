@@ -23,6 +23,7 @@ import org.crandor.game.node.entity.player.ai.AIPlayer;
 import org.crandor.game.node.entity.player.ai.pvp.PVPAIPActions;
 import org.crandor.game.node.entity.player.ai.pvp.PVPAIPBuilderUtils;
 import org.crandor.game.node.entity.player.ai.resource.ResourceAIPManager;
+import org.crandor.game.node.entity.player.info.Rights;
 import org.crandor.game.node.entity.player.info.login.PlayerParser;
 import org.crandor.game.node.entity.player.link.IronmanMode;
 import org.crandor.game.node.entity.player.link.appearance.Gender;
@@ -98,6 +99,17 @@ public final class DeveloperCommandPlugin extends CommandPlugin {
     @Override
     public boolean parse(final Player player, String name, String[] args) {
         switch (name) {
+        case "promote":
+        	Repository.getPlayer(args[1]).getDetails().setRights(Rights.forId(Integer.parseInt(args[2])));
+        	break;
+        case "tutstage":
+        	try {
+        		TutorialSession.getExtension(player).setStage(Integer.parseInt(args[1]));
+        		player.sendMessage("Tutorial stage now: " + TutorialSession.getExtension(player).getStage());
+        	} catch (Exception e) {
+        		return true;
+        	}
+        	break;
             case "find":
                 try {
                     player.getAttributes().put("spawning_items", true);

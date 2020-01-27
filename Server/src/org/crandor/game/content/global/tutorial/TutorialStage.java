@@ -1,7 +1,9 @@
 package org.crandor.game.content.global.tutorial;
 
 import org.crandor.game.component.Component;
+import org.crandor.game.content.activity.ActivityManager;
 import org.crandor.game.node.entity.combat.equipment.WeaponInterface;
+import org.crandor.game.node.entity.npc.NPC;
 import org.crandor.game.node.entity.player.Player;
 import org.crandor.game.node.entity.player.link.HintIconManager;
 import org.crandor.game.node.object.GameObject;
@@ -26,7 +28,7 @@ public enum TutorialStage {
 				player.lock(1);
 				player.getProperties().setTeleportLocation(Location.create(3094, 3107, 0));
 				player.getInterfaceManager().hideTabs(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13);
-				player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(945)));
+				player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(7938)));
 				GameWorld.submit(new Pulse(1) {
 					@Override
 					public boolean pulse() {
@@ -54,12 +56,14 @@ public enum TutorialStage {
 		@Override
 		public void run(final Player player) {
 			if (login) {
-				player.getInterfaceManager().hideTabs(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13);
+				//player.getInterfaceManager().hideTabs(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13);
 			} else {
 				player.getConfigManager().set(1021, 0);
 			}
-			player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(945)));
-			Component.setUnclosable(player, player.getDialogueInterpreter().sendScrollMessageWithBlueTitle("Player controls", "On the side panel you can now see a variety of options from", "changing the brightness of the screen and the volume of", "music, to selecting whether your player should accept help", "from other players. Don't worry about these too much for now,", "they will become clearer as you explore the game. Talk to the", GameWorld.getName() + " Guide to continue."));
+			
+			ActivityManager.start(player, "ltr:dragon_fight_cs", false);
+			Component.setUnclosable(player, player.getDialogueInterpreter().sendPlaneMessageWithBlueTitle("Cutscenes", "There are moments in RuneScape that you cannot change what is going on -", "you must simply watch to see what unfolds. Some call these 'cutscenes'. Watch", "the knight fight the dragon in this cutscene."));
+			
 		}
 	},
 	STAGE_3(3) {
@@ -70,8 +74,9 @@ public enum TutorialStage {
 			} else {
 				removeHintIcon(player);
 			}
-			player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Location.create(3098, 3107, 0), 1, -1, player.getHintIconManager().freeSlot(), 125, 3));
-			Component.setUnclosable(player, player.getDialogueInterpreter().sendScrollMessageWithBlueTitle("Interacting with scenery", "You can interact with many items of scenery by simply clicking", "on them. Right clicking will also give more options. Feel free to", "try it with the things in this room, then click on the door", "indicated with the yellow arrow to go though to the next", "instructor."));
+			player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(7938)));
+			Component.setUnclosable(player, player.getDialogueInterpreter().sendPlaneMessageWithBlueTitle("Combat!", "Left-click on the knight to talk to him about combat. I have put a flashing", "yellow arrow above his head if you can't see him, use your keyboard's arrow", "keys to rotate your view."));
+			
 		}
 	},
 	STAGE_4(4) {
@@ -83,8 +88,9 @@ public enum TutorialStage {
 				removeHintIcon(player);
 			}
 			player.getConfigManager().set(406, 2);
-			player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(943)));
-			Component.setUnclosable(player, player.getDialogueInterpreter().sendPlaneMessageWithBlueTitle("Moving around", "Follow the path to find the next instructor. Clicking on the", "ground will walk you to that point. Talk to the Survival Expert by", "the pond to continue the tutorial. Remember you can rotate", "the view by pressing the arrow keys."));
+			
+			player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(7965)));
+			Component.setUnclosable(player, player.getDialogueInterpreter().sendPlaneMessageWithBlueTitle("", "If you hover your cursor over an attackable character in RuneScape, their", "Combat level will appear in the top-left corner of the game screen.", "Try it by rotating the camera (using the arrow keys on your keyboard) until", "you can see the goblin.", "Hover your mouse over him and you'll see his Combat level. Click to attack the goblin."));
 		}
 	},
 	STAGE_5(5) {
@@ -98,7 +104,8 @@ public enum TutorialStage {
 				removeHintIcon(player);
 			}
 			player.getConfigManager().set(1021, 4);
-			Component.setUnclosable(player, player.getDialogueInterpreter().sendPlaneMessageWithBlueTitle("Viewing the items that you were given.", "Click on the flashing backpack icon to the right hand side of", "the main window to view your inventory. Your inventory is a list", "of everything you have in your backpack.", ""));
+			player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(7938)));
+			Component.setUnclosable(player, player.getDialogueInterpreter().sendPlaneMessageWithBlueTitle("Dropped Items", "Left-click on Sir Vant to talk about dropped items. If you can't see him, use", "your keyboard's arrow keys to rotate the viewpoint."));
 		}
 	},
 	STAGE_6(6) {
@@ -1029,4 +1036,6 @@ public enum TutorialStage {
 		player.removeAttribute("tut-island:hi_slot");
 		HintIconManager.removeHintIcon(player, slot);
 	}
+	
+	
 }

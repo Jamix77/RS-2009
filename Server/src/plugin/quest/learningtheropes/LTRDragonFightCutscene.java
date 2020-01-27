@@ -42,6 +42,7 @@ public class LTRDragonFightCutscene extends CutscenePlugin {
             /** goblin*/
             NPC.create(7964, Location.create(2522, 5000, 0), Direction.NORTH),
     };
+    
 
     private static final Animation SIR_VANT_BLOCK = Animation.create(9941);
     private static final Animation SIR_VANT_STAB = Animation.create(9938);
@@ -132,6 +133,7 @@ public class LTRDragonFightCutscene extends CutscenePlugin {
                     getDragon().getSkills().setLifepoints(99);
                     System.out.println("getGoblin().getLocation().getLocalX() = " + getGoblin().getLocation().getLocalX());
                     System.out.println("getGoblin().getLocation().getLocalY() = " + getGoblin().getLocation().getLocalY());
+                   
                     break;
 
                 case 4:
@@ -242,8 +244,10 @@ public class LTRDragonFightCutscene extends CutscenePlugin {
                 case 60:
                     System.out.println("Fight end");
                     LTRDragonFightCutscene.this.stop(true);
-                    TutorialStage.load(player, 3, false);
                     CellarMapZone.get().create(player);
+                    TutorialStage.load(player, 3, false);
+                    
+
                     return true;
                 case 61:
                     break;
@@ -306,7 +310,7 @@ public class LTRDragonFightCutscene extends CutscenePlugin {
     @Override
     public void stop(boolean fade) {
         super.stop(false);
-        player.teleport(Location.create(2524, 5004, 0));
+        
         PacketRepository.send(CameraViewPacket.class, new CameraContext(player, CameraContext.CameraType.RESET, 0, 0, 0, 0, 0));
     }
 

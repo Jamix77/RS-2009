@@ -62,6 +62,8 @@ public class MasterChefDialogue extends DialoguePlugin {
 				stage = 1;
 			*/
 			} else if (player.getInventory().containsItem(new Item(2307))) {
+			
+			if (player.getInventory().containsItem(new Item(2307))) {
 				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.HALF_GUILTY, "You already have some dough, no need", "to make more."));
 				stage = 1;
 			} else {
@@ -77,6 +79,21 @@ public class MasterChefDialogue extends DialoguePlugin {
 				}
 				break;	
 			}
+			
+			if (player.getInventory().containsAll(1933,1929)) {
+				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.HALF_GUILTY, "Mix together the flour and water to form a dough."));
+				stage = 1;
+				break;
+			} else if (player.getInventory().containsItem(new Item(2307))) {
+				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.HALF_GUILTY, "You already have some dough, no need", "to make more."));
+				stage = 1;
+			} else {
+				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.HALF_GUILTY, "I see you have lost your pot of flour and bucket of water,", "No worries i will supply you with more."));
+				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.HALF_GUILTY, "Mix together the flour and water to form a dough."));
+				stage = 1;
+			
+			}  
+			break;
 			
 		case 19:
 			if (!player.getInventory().contains(1929, 1) && !player.getInventory().containItems(1933)) {

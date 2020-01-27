@@ -62,6 +62,7 @@ public class CellarMapZone extends MapZone {
             n.init();
             n.setWalks(false);
             n.animate(new Animation(-1));
+            System.out.println("CMZ created " + n.getName() + " at " + n.getLocation().getX() + " " + n.getLocation().getY() + " " + n.getLocation().getZ());
         }
     }
 

@@ -68,12 +68,10 @@ public final class DeathTask extends NodeTask {
 			ticks = 6;
 		}
 		if (node instanceof Player) {
-			if (TutorialSession.getExtension(((Player) node)).getStage() == 52) {
-				TutorialStage.load(((Player) node), 53, false);
+			if (TutorialSession.getExtension(((Player) node)).getStage() == 4) {
+				TutorialStage.load(((Player) node), 5, false);
 			}
-			if (TutorialSession.getExtension(((Player) node)).getStage() == 54) {
-				TutorialStage.load(((Player) node), 55, false);
-			}
+			
 		}
 		return e.getAttribute("tick:death", -1) <= GameWorld.getTicks() - ticks;
 	}
