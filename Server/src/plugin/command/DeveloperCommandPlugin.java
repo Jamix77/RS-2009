@@ -1,5 +1,15 @@
 package plugin.command;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.crandor.ServerConstants;
 import org.crandor.cache.Cache;
 import org.crandor.cache.def.impl.ItemDefinition;
@@ -18,14 +28,9 @@ import org.crandor.game.content.skill.member.summoning.pet.Pets;
 import org.crandor.game.node.entity.combat.ImpactHandler.HitsplatType;
 import org.crandor.game.node.entity.npc.NPC;
 import org.crandor.game.node.entity.player.Player;
-import org.crandor.game.node.entity.player.ai.AIPBuilder;
-import org.crandor.game.node.entity.player.ai.AIPlayer;
-import org.crandor.game.node.entity.player.ai.pvp.PVPAIPActions;
-import org.crandor.game.node.entity.player.ai.pvp.PVPAIPBuilderUtils;
 import org.crandor.game.node.entity.player.ai.resource.ResourceAIPManager;
 import org.crandor.game.node.entity.player.info.login.PlayerParser;
 import org.crandor.game.node.entity.player.link.IronmanMode;
-import org.crandor.game.node.entity.player.link.appearance.Gender;
 import org.crandor.game.node.entity.player.link.skillertasks.Difficulty;
 import org.crandor.game.node.entity.state.EntityState;
 import org.crandor.game.node.item.Item;
@@ -50,15 +55,9 @@ import org.crandor.plugin.InitializablePlugin;
 import org.crandor.plugin.Plugin;
 import org.crandor.plugin.PluginManager;
 import org.crandor.tools.RandomFunction;
-import plugin.skill.herblore.PotionDecantingPlugin;
 
-import java.awt.*;
-import java.awt.datatransfer.Clipboard;
-import java.awt.datatransfer.StringSelection;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.List;
-import java.util.Map.Entry;
+import plugin.activity.stealingcreations.StealingCreationPlugin;
+import plugin.skill.herblore.PotionDecantingPlugin;
 
 /**
  * Handles the developer commands.
@@ -98,6 +97,11 @@ public final class DeveloperCommandPlugin extends CommandPlugin {
     @Override
     public boolean parse(final Player player, String name, String[] args) {
         switch (name) {
+        case "teststealing":
+        	List<Player> players = new ArrayList<Player>();
+        	players.add(player);
+        	new StealingCreationPlugin(players).construct();
+        	break;
             case "find":
                 try {
                     player.getAttributes().put("spawning_items", true);
