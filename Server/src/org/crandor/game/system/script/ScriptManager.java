@@ -96,14 +96,18 @@ public final class ScriptManager {
 				if (file.getName().equals(".DS_Store")) {
 					continue;
 				}
+				//Files to EXCLUDE from loading
+				if (file.getName().equals("simon_templeton.asc") || file.getName().equals("ardougne_baker.asc") || file.getName().equals("anna_isaakson.asc")){
+					continue;
+				}
 				if (file.isDirectory()) {
 					load(file);
 					continue;
 				}
-				ScriptContext context = ScriptCompiler.parseRaw(file);
-				if (ScriptCompiler.getBuilder() != null) {
-					ScriptCompiler.getBuilder().configureScript(context);
-				}
+//				ScriptContext context = ScriptCompiler.parseRaw(file);
+//				if (ScriptCompiler.getBuilder() != null) {
+//					ScriptCompiler.getBuilder().configureScript(context);
+//				}
 				amount++;
 			}
 		} catch (Throwable e) {

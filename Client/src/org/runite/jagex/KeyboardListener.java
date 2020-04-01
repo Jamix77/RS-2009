@@ -76,10 +76,13 @@ final class KeyboardListener implements KeyListener, FocusListener {
             {
                Class73.method1308(RSString.createRSString("::shutdowninterface"), false);
             }
-			if (var1.getKeyCode() == KeyEvent.VK_SPACE)
+			
+			//causing issues when in other interfaces, such as GE interface. My quick thing impl didn't work - Jamix77
+			
+			/**if (var1.getKeyCode() == KeyEvent.VK_SPACE)
             {
                Class2.method78(40, false, 0);
-            }
+            }**/
 			
             
             /**
@@ -116,6 +119,7 @@ final class KeyboardListener implements KeyListener, FocusListener {
 
    public final void keyTyped(KeyEvent var1) {
       try {
+    	 
          if(Class3_Sub13_Sub3.aClass148_3049 != null) {
             int var2 = Class79.method1386(true, var1);
             if(-1 >= ~var2) {

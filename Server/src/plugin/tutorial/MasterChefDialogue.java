@@ -50,6 +50,11 @@ public class MasterChefDialogue extends DialoguePlugin {
 			
 			} else if (player.getInventory().containsItem(new Item(2307))) {
 				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.NO_EXPRESSION, "You already have some dough, no need", "to make more."));
+				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.NEUTRAL, "Mix together the flour and water to form a dough."));
+				stage = 1;
+			
+			} else if (player.getInventory().containsItem(new Item(2307))) {
+				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.NEUTRAL, "You already have some dough, no need", "to make more."));
 				stage = 1;
 			
 			} else if (player.getInventory().containsItem(new Item(2307))) {
@@ -69,6 +74,7 @@ public class MasterChefDialogue extends DialoguePlugin {
 			} else {
 				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.HALF_GUILTY, "I see you have lost your pot of flour and bucket of water,", "No worries i will supply you with more."));
 				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.NO_EXPRESSION, "I see you have lost your pot of flour and bucket of water,", "No worries i will supply you with more."));
+				Component.setUnclosable(player, interpreter.sendDialogues(npc, FacialExpression.NEUTRAL, "I see you have lost your pot of flour and bucket of water,", "No worries i will supply you with more."));
 				if (player.getInventory().freeSlots() >= 2) {
 					player.getInventory().add(new Item(1933));
 					player.getInventory().add(new Item(1929));

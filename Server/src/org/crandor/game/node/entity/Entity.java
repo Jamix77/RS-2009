@@ -211,6 +211,10 @@ public abstract class Entity extends Node {
 	 * @param killer The killer of this entity.
 	 */
 	public void finalizeDeath(Entity killer) {
+		if (killer.isPlayer()) {
+			if (!((Player)killer).isArtificial())
+			((Player)killer).getStatisticsManager().getENTITIES_KILLED().incrementAmount();
+		}
 		skills.restore();
 		skills.rechargePrayerPoints();
 		impactHandler.getImpactQueue().clear();
@@ -220,6 +224,10 @@ public abstract class Entity extends Node {
 		face(null);
 		if (HolidayEvent.getCurrent() != null) {
 			HolidayEvent.getCurrent().finalizeDeath(killer, this);
+		}
+		//Check if it's a Loar shade and transform back into the shadow version.
+		if(this.getId() == 1240 || this.getId() == 1241){
+			this.asNpc().transform(1240);
 		}
 	}
 

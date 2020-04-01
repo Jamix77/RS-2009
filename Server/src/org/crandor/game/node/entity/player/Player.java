@@ -1,5 +1,8 @@
 package org.crandor.game.node.entity.player;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.crandor.ServerConstants;
 import org.crandor.game.component.Component;
 import org.crandor.game.container.Container;
@@ -9,6 +12,7 @@ import org.crandor.game.container.impl.InventoryListener;
 import org.crandor.game.content.ame.AntiMacroHandler;
 import org.crandor.game.content.dialogue.DialogueInterpreter;
 import org.crandor.game.content.eco.ge.GrandExchange;
+import org.crandor.game.content.global.jobs.JobsMinigameManager;
 import org.crandor.game.content.global.ttrail.TreasureTrailManager;
 import org.crandor.game.content.skill.Skills;
 import org.crandor.game.content.skill.member.construction.HouseManager;
@@ -36,7 +40,20 @@ import org.crandor.game.node.entity.player.info.UIDInfo;
 import org.crandor.game.node.entity.player.info.login.LoginConfiguration;
 import org.crandor.game.node.entity.player.info.portal.DonatorType;
 import org.crandor.game.node.entity.player.info.portal.Perks;
-import org.crandor.game.node.entity.player.link.*;
+import org.crandor.game.node.entity.player.link.BankPinManager;
+import org.crandor.game.node.entity.player.link.BarcrawlManager;
+import org.crandor.game.node.entity.player.link.ConfigurationManager;
+import org.crandor.game.node.entity.player.link.GlobalData;
+import org.crandor.game.node.entity.player.link.HintIconManager;
+import org.crandor.game.node.entity.player.link.InterfaceManager;
+import org.crandor.game.node.entity.player.link.IronmanManager;
+import org.crandor.game.node.entity.player.link.IronmanMode;
+import org.crandor.game.node.entity.player.link.PacketDispatch;
+import org.crandor.game.node.entity.player.link.SavedData;
+import org.crandor.game.node.entity.player.link.Settings;
+import org.crandor.game.node.entity.player.link.SkullManager;
+import org.crandor.game.node.entity.player.link.SpellBookManager;
+import org.crandor.game.node.entity.player.link.WarningMessages;
 import org.crandor.game.node.entity.player.link.appearance.Appearance;
 import org.crandor.game.node.entity.player.link.audio.AudioManager;
 import org.crandor.game.node.entity.player.link.diary.AchievementDiaryManager;
@@ -48,6 +65,7 @@ import org.crandor.game.node.entity.player.link.prayer.PrayerType;
 import org.crandor.game.node.entity.player.link.quest.QuestRepository;
 import org.crandor.game.node.entity.player.link.request.RequestManager;
 import org.crandor.game.node.entity.player.link.skillertasks.SkillerTasks;
+import org.crandor.game.node.entity.player.link.statistics.PlayerStatisticsManager;
 import org.crandor.game.node.item.GroundItem;
 import org.crandor.game.node.item.GroundItemManager;
 import org.crandor.game.node.item.Item;
@@ -55,7 +73,12 @@ import org.crandor.game.system.communication.CommunicationInfo;
 import org.crandor.game.system.monitor.PlayerMonitor;
 import org.crandor.game.system.task.LogoutTask;
 import org.crandor.game.world.GameWorld;
-import org.crandor.game.world.map.*;
+import org.crandor.game.world.map.Direction;
+import org.crandor.game.world.map.Location;
+import org.crandor.game.world.map.Region;
+import org.crandor.game.world.map.RegionChunk;
+import org.crandor.game.world.map.RegionManager;
+import org.crandor.game.world.map.Viewport;
 import org.crandor.game.world.map.build.DynamicRegion;
 import org.crandor.game.world.map.zone.ZoneType;
 import org.crandor.game.world.repository.Repository;
@@ -78,8 +101,8 @@ import org.crandor.net.packet.out.UpdateSceneGraph;
 import org.crandor.plugin.Plugin;
 import org.crandor.tools.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import plugin.activity.pyramidplunder.PlunderObjectManager;
+import plugin.interaction.item.brawling_gloves.BrawlingGloveManager;
 
 /**
  * Represents a player entity.
@@ -194,6 +217,11 @@ public class Player extends Entity {
 	private final FamiliarManager familiarManager = new FamiliarManager(this);
 
 	/**
+	 * Pyramid Plunder Object Manager
+	 */
+	private final PlunderObjectManager plunderObjectManager = new PlunderObjectManager(this);
+
+	/**
 	 * The config manager.
 	 */
 	private final ConfigurationManager configManager = new ConfigurationManager(this);
@@ -202,7 +230,7 @@ public class Player extends Entity {
 	 * The saved data.
 	 */
 	private final SavedData savedData = new SavedData(this);
-	
+
 	/**
 	 * The request manager.
 	 */
@@ -272,6 +300,21 @@ public class Player extends Entity {
 	 * The Ironman manager.
 	 */
 	private final IronmanManager ironmanManager = new IronmanManager(this);
+	
+	/**
+	 * The jobs minigame manager.
+	 */
+	private final JobsMinigameManager jobsManager = new JobsMinigameManager(this);
+	
+	/**
+	 * The statistics manager.
+	 */
+	private final PlayerStatisticsManager statisticsManager = new PlayerStatisticsManager(this);
+
+	/**
+	 * Brawling gloves manager
+	 */
+	private final BrawlingGloveManager brawlingGloveManager = new BrawlingGloveManager(this);
 
 	/**
 	 * The logout plugins.
@@ -282,17 +325,17 @@ public class Player extends Entity {
 	 * The boolean for the player playing.
 	 */
 	private boolean playing;
-	
-	 /**
-     * If the player is invisible.
-     */
-    private boolean invisible;
+
+	/**
+	 * If the player is invisible.
+	 */
+	private boolean invisible;
 
 	/**
 	 * If the player is artificial.
 	 */
 	protected boolean artificial;
-	
+
 	/**
 	 * The skiller tasks.
 	 */
@@ -302,6 +345,13 @@ public class Player extends Entity {
 	 * A custom state for bot debugging
 	 */
 	private String customState = "";
+	
+	/**
+	 * The amount of targets that the player can shoot left for the archery minigame.
+	 */
+	private int archeryTargets = 0;
+	
+	private int archeryTotal = 0;
 
 	/**
 	 * Constructs a new {@code Player} {@code Object}.
@@ -317,20 +367,22 @@ public class Player extends Entity {
 
 	@Override
 	public void init() {
-		if (!isArtificial()) {
+		antiMacroHandler.isDisabled = savedData.getGlobalData().getMacroDisabled();
+		if (!artificial) {
 			getProperties().setSpawnLocation(ServerConstants.HOME_LOCATION);
 			getDetails().getSession().setObject(this);
 			getDetails().getSession().setLastPing(System.currentTimeMillis() + 10_000L);
+			antiMacroHandler.init();
 		}
 		super.init();
 		LoginConfiguration.configureLobby(this);
 	}
-	
+
 	@Override
 	public void clear() {
 		clear(false);
 	}
-	
+
 	/**
 	 * Clears the player from the game.
 	 * @param force If we should force removal, a player engaged in combat will otherwise remain active until out of combat.
@@ -445,7 +497,7 @@ public class Player extends Entity {
 	public CombatSwingHandler getSwingHandler(boolean swing) {
 		CombatStyle style = getProperties().getCombatPulse().getStyle();
 		if (swing) {
-			int weaponId = equipment.getNew(3).getId();	
+			int weaponId = equipment.getNew(3).getId();
 			if (getProperties().getSpell() != null || getProperties().getAutocastSpell() != null) {
 				return CombatStyle.MAGIC.getSwingHandler();
 			}
@@ -497,9 +549,20 @@ public class Player extends Entity {
 			return;
 		}
 		getPacketDispatch().sendMessage("Oh dear, you are dead!");
-		if (this.getIronmanManager().checkRestriction(IronmanMode.ULTIMATE)){
-			Repository.sendNews("Ultimate ironman "+this.getUsername()+" has just perished.");
+		
+		if (!isArtificial()) {
+			getStatisticsManager().getDEATHS().incrementAmount();
 		}
+
+		//If player was a Hardcore Ironman, announce that they died
+		if (this.getIronmanManager().getMode().equals(IronmanMode.HARDCORE)){ //if this was checkRestriction, ultimate irons would be moved to HARDCORE_DEAD as well
+			String gender = this.isMale() ? "Man " : "Woman ";
+			Repository.sendNews("Hardcore Iron " + gender + " " + this.getUsername() +" has fallen. Total Level: " + this.getSkills().getTotalLevel()); // Not enough room for XP
+			this.getIronmanManager().setMode(IronmanMode.STANDARD);
+			asPlayer().getSavedData().getActivityData().setHardcoreDeath(true);
+			this.sendMessage("You have fallen as a Hardcore Iron Man, your Hardcore status has been revoked.");
+		}
+
 		packetDispatch.sendTempMusic(90);
 		if (!getZoneMonitor().handleDeath(killer) && (!getProperties().isSafeZone() && getZoneMonitor().getType() != ZoneType.SAFE.getId()) && getDetails().getRights() != Rights.ADMINISTRATOR) {
 			GroundItemManager.create(new Item(526), getLocation(), k);
@@ -536,10 +599,10 @@ public class Player extends Entity {
 			inventory.addAll(c[0]);
 			if (gravestone) {
 				graveManager.create(ticks, items);
-			    sendMessages("<col=990000>Because of your current gavestone, you have "+graveManager.getType().getDecay()+" minutes to get your items and", "<col=990000>equipment back after dying in combat.");	
+				sendMessages("<col=990000>Because of your current gravestone, you have "+graveManager.getType().getDecay()+" minutes to get your items and", "<col=990000>equipment back after dying in combat.");
 			}
 			familiarManager.dismiss();
-			
+
 		}
 		skullManager.setSkulled(false);
 		removeAttribute("combat-time");
@@ -694,7 +757,7 @@ public class Player extends Entity {
 	public void sendMessage(String message) {
 		sendMessages(message);
 	}
-	
+
 	/**
 	 * Sends a notification message.
 	 * @param message The message.
@@ -711,12 +774,12 @@ public class Player extends Entity {
 	public boolean hasPerk(Perks perk) {
 		return details.getShop().hasPerk(perk);
 	}
-	
+
 	public boolean spawnZone() {
 		return (getLocation().getX() > 3090 && getLocation().getY() < 3500
-		&& getLocation().getX() < 3099 && getLocation().getY() > 3487);
+				&& getLocation().getX() < 3099 && getLocation().getY() > 3487);
 	}
-	
+
 	/**
 	 * Checks if the player can spawn.
 	 * @return {@code True} if so.
@@ -751,7 +814,7 @@ public class Player extends Entity {
 			packetDispatch.sendMessage(string);
 		}
 	}
-	
+
 	/**
 	 * Grabs a players gender, using shorter amount of code
 	 */
@@ -762,7 +825,7 @@ public class Player extends Entity {
 		else
 			return false;
 	}
-	
+
 	/**
 	 * Sets the player details.
 	 * @param details The player details.
@@ -857,7 +920,7 @@ public class Player extends Entity {
 	public PlayerDetails getDetails() {
 		return details;
 	}
-	
+
 	/**
 	 * Gets the name.
 	 * @param display the display.
@@ -1120,7 +1183,7 @@ public class Player extends Entity {
 	 * Gets the houseManager.
 	 * @return The houseManager.
 	 */
-	public HouseManager getHouseManager() { 
+	public HouseManager getHouseManager() {
 		return houseManager;
 	}
 
@@ -1223,6 +1286,8 @@ public class Player extends Entity {
 		return ironmanManager;
 	}
 
+	public PlunderObjectManager getPlunderObjectManager() {return plunderObjectManager;}
+
 	/**
 	 * Gets the emoteManager.
 	 * @return the emoteManager.
@@ -1230,23 +1295,23 @@ public class Player extends Entity {
 	public EmoteManager getEmoteManager() {
 		return emoteManager;
 	}
-	
-    /**
-     * Gets the invisible.
-     * @return the invisible
-     */
-    public boolean isInvisible() {
-    	return invisible;
-    }
- 
-    /**
-     * Sets the invisible.
-     * @param invisible the invisible to set.
-     */
-    public void setInvisible(boolean invisible) {
-    	this.invisible = invisible;
-    }   
- 
+
+	/**
+	 * Gets the invisible.
+	 * @return the invisible
+	 */
+	public boolean isInvisible() {
+		return invisible;
+	}
+
+	/**
+	 * Sets the invisible.
+	 * @param invisible the invisible to set.
+	 */
+	public void setInvisible(boolean invisible) {
+		this.invisible = invisible;
+	}
+
 	@Override
 	public String getUsername() {
 		return StringUtils.formatDisplayName(getName());
@@ -1266,12 +1331,38 @@ public class Player extends Entity {
 	}
 
 
-    public String getCustomState() {
-    	return customState;
-    }
+	public String getCustomState() {
+		return customState;
+	}
 
-    public void setCustomState(String state)
+	public void setCustomState(String state)
 	{
 		this.customState = state;
 	}
+
+	public int getArcheryTargets() {
+		return archeryTargets;
+	}
+
+	public void setArcheryTargets(int archeryTargets) {
+		this.archeryTargets = archeryTargets;
+	}
+
+	public int getArcheryTotal() {
+		return archeryTotal;
+	}
+
+	public void setArcheryTotal(int archeryTotal) {
+		this.archeryTotal = archeryTotal;
+	}
+
+	public JobsMinigameManager getJobsManager() {
+		return jobsManager;
+	}
+
+	public PlayerStatisticsManager getStatisticsManager() {
+		return statisticsManager;
+	}
+
+	public BrawlingGloveManager getBrawlingGloveManager() { return brawlingGloveManager;}
 }

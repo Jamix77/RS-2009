@@ -27,6 +27,8 @@ import org.crandor.game.node.entity.player.info.Rights;
 import org.crandor.game.node.entity.player.info.login.PlayerParser;
 import org.crandor.game.node.entity.player.link.IronmanMode;
 import org.crandor.game.node.entity.player.link.appearance.Gender;
+import org.crandor.game.node.entity.player.link.music.MusicEntry;
+import org.crandor.game.node.entity.player.link.quest.Quest;
 import org.crandor.game.node.entity.player.link.skillertasks.Difficulty;
 import org.crandor.game.node.entity.state.EntityState;
 import org.crandor.game.node.item.Item;
@@ -51,6 +53,7 @@ import org.crandor.plugin.InitializablePlugin;
 import org.crandor.plugin.Plugin;
 import org.crandor.plugin.PluginManager;
 import org.crandor.tools.RandomFunction;
+import org.crandor.tools.StringUtils;
 import plugin.skill.herblore.PotionDecantingPlugin;
 
 import java.awt.*;
@@ -110,6 +113,17 @@ public final class DeveloperCommandPlugin extends CommandPlugin {
         		return true;
         	}
         	break;
+        	case "unlockmusic":
+        		for (MusicEntry me : MusicEntry.getSongs().values()) {
+        			player.getMusicPlayer().unlock(me.getId());
+        		}
+        		
+        	break;
+        	
+        	case "playsong":
+        		player.getMusicPlayer().play(MusicEntry.getSongs().get(Integer.parseInt(args[1])));
+        		player.sendMessage("Playing song: " + MusicEntry.getSongs().get(Integer.parseInt(args[1])).getName());
+        		break;
             case "find":
                 try {
                     player.getAttributes().put("spawning_items", true);
@@ -536,7 +550,39 @@ public final class DeveloperCommandPlugin extends CommandPlugin {
             case "roar":
                 player.getPacketDispatch().sendInterfaceConfig(762, 20, false);
                 break;
-        }
+            case "setstage":
+                if(args.length < 2) {
+                    player.getPacketDispatch().sendMessage("Syntax: setstage stage# quest name");
+                } else {
+                    int stageId = 0;
+                    stageId = toInteger(args[1]);
+                    String questName = "";
+                    for (int i = 2; i < args.length; i++) {
+                        questName += (i == 2 ? "" : " ") + args[i];
+                    }
+                    questName = StringUtils.formatDisplayName(questName);
+                    Quest quest = player.getQuestRepository().getQuest(questName);
+                    if (quest == null) {
+                        player.debug("err or: invalid quest - " + questName);
+                        return true;
+                    }
+                    player.debug("Setting quest " + questName + " to stage " + stageId);
+                    player.getQuestRepository().setStage(quest,stageId);
+                    player.getQuestRepository().syncronizeTab(player);
+                }
+                break;
+            case "finishtask":
+                player.debug("Kill the npc that spawned to finish your task.");
+                player.getSlayer().setAmount(1);
+                NPC finisher = new NPC(player.getSlayer().getTask().getNpcs()[0],player.getLocation());
+                finisher.setRespawn(false);
+                finisher.init();
+                break;
+            case "setslayerpoints":
+                player.getSlayer().setSlayerPoints(toInteger(args[1]));
+                player.debug("Set slayer points to " + args[1]);
+                break;
+            }
         return false;
     }
 

@@ -18,12 +18,15 @@ import org.crandor.game.node.entity.player.link.diary.DiaryType;
 import org.crandor.game.node.item.Item;
 import org.crandor.game.node.object.GameObject;
 import org.crandor.game.node.object.ObjectBuilder;
+import org.crandor.game.world.GameWorld;
 import org.crandor.game.world.map.Location;
 import org.crandor.tools.RandomFunction;
 import org.crandor.tools.StringUtils;
+import plugin.interaction.item.brawling_gloves.BrawlingGloves;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -152,6 +155,7 @@ public final class GatheringSkillPulse extends SkillPulse<GameObject> {
 			Projectile.create(player, null, 1776, 35, 30, 20, 25).transform(player, new Location(player.getLocation().getX() + 2, player.getLocation().getY()), true, 25, 25).send();
 			player.getSkills().addExperience(Skills.WOODCUTTING, resource.getExperience());
 			player.getSkills().addExperience(Skills.FIREMAKING, resource.getExperience());
+			player.getStatisticsManager().getLOGS_OBTAINED().incrementAmount();
 			return false;
 		}
 		int reward = resource.getReward();
@@ -165,6 +169,11 @@ public final class GatheringSkillPulse extends SkillPulse<GameObject> {
 			Perks.addDouble(player, item);
 			// Apply the experience points
 			double experience = calculateExperience(reward, rewardAmount);
+			//handle mining/woodcutting brawling gloves
+			if(player.getEquipment().containsItem(new Item(BrawlingGloves.forSkill(resource.getSkillId()).getId()))){
+				experience += player.getBrawlingGloveManager().getExperienceBonus() * experience;
+				player.getBrawlingGloveManager().updateCharges(BrawlingGloves.forSkill(resource.getSkillId()).getId(),1);
+			}
 			player.getSkills().addExperience(resource.getSkillId(), experience, true);
 			// Send a message to the player
 			if (isMiningGems) {
@@ -174,9 +183,17 @@ public final class GatheringSkillPulse extends SkillPulse<GameObject> {
 				player.getPacketDispatch().sendMessage("You cut a branch from the Dramen tree.");
 			} else {
 				player.getPacketDispatch().sendMessage("You get some " + ItemDefinition.forId(reward).getName().toLowerCase() + ".");
+				player.getStatisticsManager().getLOGS_OBTAINED().incrementAmount();
 			}
-			// Calculate if the player should receive a bonus gem
+			// Calculate if the player should receive a bonus gem or bonus ore or both
 			if (!isMiningEssence && isMining) {
+				//check for bonus ore from shooting star buff
+				if(isMining && (player.getAttribute("SS Mining Bonus", GameWorld.getTicks()) > GameWorld.getTicks())){
+					if(RandomFunction.getRandom(7) == 5) {
+						player.getPacketDispatch().sendMessage("...you manage to mine a second ore thanks to the Star Sprite.");
+						player.getInventory().add(item);
+					}
+				}
 				int chance = 282;
 				boolean altered = false;
 				if (player.getEquipment().getNew(EquipmentContainer.SLOT_RING).getId() == 2572) {
@@ -345,11 +362,7 @@ public final class GatheringSkillPulse extends SkillPulse<GameObject> {
 		
 		if (isMining && !isMiningEssence) {
 			// Not sure what this bonus is for
-			if (isMining && player.getSavedData().getGlobalData().getStarSpriteDelay() > System.currentTimeMillis() && TimeUnit.MILLISECONDS.toMinutes(player.getSavedData().getGlobalData().getStarSpriteDelay() - System.currentTimeMillis()) >= 1425) {
-				amount += 1;
-			}
-			// Not sure what this bonus is for
-			else if (isMining && !isMiningEssence && player.getAchievementDiaryManager().getDiary(DiaryType.VARROCK).getLevel() != -1 && player.getAchievementDiaryManager().checkMiningReward(reward) && RandomFunction.random(100) <= 10) {
+			if (isMining && !isMiningEssence && player.getAchievementDiaryManager().getDiary(DiaryType.VARROCK).getLevel() != -1 && player.getAchievementDiaryManager().checkMiningReward(reward) && RandomFunction.random(100) <= 10) {
 				amount += 1;
 				player.sendMessage("Through the power of the varrock armour you receive an extra ore.");
 			}

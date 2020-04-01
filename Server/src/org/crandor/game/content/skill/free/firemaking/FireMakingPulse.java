@@ -17,6 +17,7 @@ import org.crandor.game.world.map.RegionManager;
 import org.crandor.game.world.update.flag.context.Animation;
 import org.crandor.game.world.update.flag.player.FaceLocationFlag;
 import org.crandor.tools.RandomFunction;
+import plugin.interaction.item.brawling_gloves.BrawlingGloves;
 
 /**
  * Represents the pulse used to light a log.
@@ -89,6 +90,9 @@ public final class FireMakingPulse extends SkillPulse<Item> {
 			player.removeAttribute("remove-log");
 			if (player.getInventory().remove(node)) {
 				GroundItemManager.create(groundItem);
+				if (groundItem.getId() == 1521 && !player.getAchievementDiaryManager().getDiary(DiaryType.LUMBRIDGE).isComplete(0, 4)) {
+					player.getAchievementDiaryManager().updateTask(player, DiaryType.LUMBRIDGE, 0, 4, true);
+				}
 			}
 		}
 		return true;
@@ -116,9 +120,6 @@ public final class FireMakingPulse extends SkillPulse<Item> {
 		if (!success()) {
 			return false;
 		}
-		if (player.getViewport().getRegion().getId() == 12850 && !player.getAchievementDiaryManager().getDiary(DiaryType.LUMBRIDGE).isComplete(0, 4)) {
-			player.getAchievementDiaryManager().updateTask(player, DiaryType.LUMBRIDGE, 0, 4, true);
-		}
 		createFire();
 		return true;
 	}
@@ -130,7 +131,7 @@ public final class FireMakingPulse extends SkillPulse<Item> {
 		if (!groundItem.isActive()) {
 			return;
 		}
-		if (fire == Log.YEW && !player.getAchievementDiaryManager().getDiary(DiaryType.VARROCK).isComplete(2, 2) && player.getLocation().withinDistance(new Location(3256, 3487, 2))) {
+		if (fire == Log.YEW && !player.getAchievementDiaryManager().getDiary(DiaryType.VARROCK).isComplete(2, 2) && player.getLocation().withinDistance(new Location(3256, 3487, 3))) {
 			player.getAchievementDiaryManager().getDiary(DiaryType.VARROCK).updateTask(player, 2, 2, true);
 		}
 		// GameObject originalOnSpot =
@@ -139,7 +140,13 @@ public final class FireMakingPulse extends SkillPulse<Item> {
 		ObjectBuilder.add(object, fire.getLife(), getAsh(player, fire, object));
 		GroundItemManager.destroy(groundItem);
 		player.moveStep();
-		player.getSkills().addExperience(Skills.FIREMAKING, fire.getXp(), true);
+		double experience = fire.getXp();
+		//handle firemaking brawlers
+		if(player.getEquipment().containsItem(new Item (BrawlingGloves.FIREMAKING.getId()))){
+			experience += experience * player.getBrawlingGloveManager().getExperienceBonus();
+			player.getBrawlingGloveManager().updateCharges(BrawlingGloves.FIREMAKING.getId(),1);
+		}
+		player.getSkills().addExperience(Skills.FIREMAKING, experience, true);
 		player.faceLocation(FaceLocationFlag.getFaceLocation(player, object));
 		if (TutorialSession.getExtension(player).getStage() == 9) {
 			TutorialStage.load(player, 10, false);

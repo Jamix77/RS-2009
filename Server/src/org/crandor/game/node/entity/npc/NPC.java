@@ -1,6 +1,7 @@
 package org.crandor.game.node.entity.npc;
 
 import org.crandor.cache.def.impl.NPCDefinition;
+import org.crandor.game.content.global.jobs.impl.SlayingJob;
 import org.crandor.game.content.global.shop.Shop;
 import org.crandor.game.content.skill.Skills;
 import org.crandor.game.content.skill.member.slayer.Task;
@@ -321,7 +322,8 @@ public class NPC extends Entity {
 		shop.open(player);
 		
 		//Fix for issue #11 for shops keeping dialogue open.
-		player.getDialogueInterpreter().getDialogue().end();
+		if (!player.getDialogueInterpreter().getDialogue().isFinished())
+			player.getDialogueInterpreter().getDialogue().end();
 		
 		return true;
 	}
@@ -495,6 +497,9 @@ public class NPC extends Entity {
 		}
 		if (task != null && killer instanceof Player && ((Player) killer).getSlayer().getTask() == task) {
 			((Player) killer).getSlayer().finalizeDeath(killer.asPlayer(), this);
+		}
+		if (killer instanceof Player && ((Player)killer).getJobsManager().getJob() != null && ((Player)killer).getJobsManager().getJob() instanceof SlayingJob) {
+			((SlayingJob) ((Player)killer).getJobsManager().getJob() ).handleDeath(this);
 		}
 		setRespawnTick(GameWorld.getTicks() + definition.getConfiguration(NPCConfigSQLHandler.RESPAWN_DELAY, 17));
 		Player p = killer == null || !(killer instanceof Player) ? null : (Player) killer;

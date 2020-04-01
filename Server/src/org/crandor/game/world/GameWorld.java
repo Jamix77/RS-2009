@@ -31,10 +31,13 @@ import org.crandor.plugin.PluginManager;
 import org.crandor.tools.RandomFunction;
 import org.crandor.tools.mysql.DatabaseManager;
 import org.crandor.worker.MajorUpdateWorker;
+import plugin.interaction.city.keldagrim.KeldagrimZone;
 
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+
+import static plugin.interaction.city.keldagrim.KeldagrimZone.UNRIDEABLE_LOCATIONS;
 
 /**
  * Represents the game world.
@@ -313,6 +316,11 @@ public final class GameWorld {
         //LandscapeParser.addGameObject(new GameObject(6097, new Location(2343, 3690, 0), 10, 0));
         LandscapeParser.addGameObject(new GameObject(1317, new Location(2343, 3690, 0), 10, 3));
         LandscapeParser.addGameObject(new GameObject(1814, new Location(3090, 3475, 0), 4, 0));//edgeville lever
+        LandscapeParser.addGameObject(new GameObject(1293, new Location(2461, 3446, 0), 10,0)); // Gnome Stronghold Spirit Tree
+        LandscapeParser.addGameObject(new GameObject(2646, new Location(2445, 3413, 0), 10,0)); // Gnome Stronghold flax
+        LandscapeParser.addGameObject(new GameObject(2646, new Location(2447, 3414, 0), 10,2)); // Gnome Stronghold flax
+        LandscapeParser.addGameObject(new GameObject(2646, new Location(2447, 3421, 0), 10,0));// Gnome Stronhold flax
+
         NPC[] npcs = new NPC[]{new NPC(494, new Location(2327, 3687, 0))};
         for (NPC npc : npcs) {
             npc.setDirection(Direction.EAST);

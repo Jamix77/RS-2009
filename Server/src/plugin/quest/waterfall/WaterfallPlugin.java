@@ -111,6 +111,7 @@ public final class WaterfallPlugin extends OptionHandler {
 		ObjectDefinition.forId(37247).getConfigurations().put("option:open", this);
 		ObjectDefinition.forId(32711).getConfigurations().put("option:open", this);
 		ObjectDefinition.forId(33046).getConfigurations().put("option:open", this);
+		ObjectDefinition.forId(42313).getConfigurations().put("option:open",this);
 		ObjectDefinition.forId(42313).getConfigurations().put("option:search", this);
 		ObjectDefinition.forId(42313).getConfigurations().put("option:close", this);
 		ObjectDefinition.forId(1993).getConfigurations().put("option:search", this);
@@ -136,7 +137,7 @@ public final class WaterfallPlugin extends OptionHandler {
 			player.getPulseManager().run(new Pulse(2, player) {
 				@Override
 				public boolean pulse() {
-					if (player.getEquipment().containsOneItem(295) || player.getInventory().contains(295, 1)) {
+					if ((player.getEquipment().containsOneItem(295) || player.getInventory().contains(295, 1)) || player.getQuestRepository().isComplete("Waterfall")) {
 						player.getPacketDispatch().sendMessage("You walk through the door.");
 						player.teleport(new Location(2575, 9861));
 					} else {
@@ -209,6 +210,7 @@ public final class WaterfallPlugin extends OptionHandler {
 			break;
 		case 42313:
 			switch (option) {
+			case "open":
 			case "search":
 				if (quest.getStage(player) >= 30) {
 					if (!player.hasItem(new Item(295))) {

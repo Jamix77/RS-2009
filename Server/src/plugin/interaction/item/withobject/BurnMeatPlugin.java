@@ -5,8 +5,12 @@ import org.crandor.game.content.global.consumable.Food;
 import org.crandor.game.interaction.NodeUsageEvent;
 import org.crandor.game.interaction.UseWithHandler;
 import org.crandor.game.node.entity.player.Player;
+import org.crandor.game.node.item.Item;
 import org.crandor.game.node.object.GameObject;
 import org.crandor.game.world.update.flag.context.Animation;
+import org.crandor.net.packet.PacketRepository;
+import org.crandor.net.packet.context.GameMessageContext;
+import org.crandor.net.packet.out.GameMessage;
 import org.crandor.plugin.InitializablePlugin;
 import org.crandor.plugin.Plugin;
 
@@ -21,7 +25,7 @@ public final class BurnMeatPlugin extends UseWithHandler {
 	/**
 	 * Represents the objects allowed to cook {@code Food} on.
 	 */
-	private static final int[] OBJECTS = new int[] { 2728, 2729, 2730, 2731, 2732, 2859, 3038, 3039, 3769, 3775, 4265, 4266, 5249, 5499, 5631, 5632, 5981, 9682, 10433, 11404, 11405, 11406, 12102, 12796, 13337, 13881, 14169, 14919, 15156, 20000, 20001, 21620, 21792, 22713, 22714, 23046, 24283, 24284, 25155, 25156, 25465, 25730, 27297, 29139, 30017, 32099, 33500, 34495, 34546, 36973, 37597, 37629, 37726, 114, 4172, 5275, 8750, 16893, 22154, 34410, 34565, 114, 9085, 9086, 9087, 12269, 15398, 25440, 25441, 2724, 2725, 2726, 4618, 4650, 5165, 6093, 6094, 6095, 6096, 8712, 9439, 9440, 9441, 10824, 17640, 17641, 17642, 17643, 18039, 21795, 24285, 24329, 27251, 33498, 35449, 36815, 36816, 37426 };
+	private static final int[] OBJECTS = new int[] { 21302, 13528, 13529, 13533, 13531, 13536, 13539, 13542, 2728, 2729, 2730, 2731, 2732, 2859, 3038, 3039, 3769, 3775, 4265, 4266, 5249, 5499, 5631, 5632, 5981, 9682, 10433, 11404, 11405, 11406, 12102, 12796, 13337, 13881, 14169, 14919, 15156, 20000, 20001, 21620, 21792, 22713, 22714, 23046, 24283, 24284, 25155, 25156, 25465, 25730, 27297, 29139, 30017, 32099, 33500, 34495, 34546, 36973, 37597, 37629, 37726, 114, 4172, 5275, 8750, 16893, 22154, 34410, 34565, 114, 9085, 9086, 9087, 12269, 15398, 25440, 25441, 2724, 2725, 2726, 4618, 4650, 5165, 6093, 6094, 6095, 6096, 8712, 9439, 9440, 9441, 10824, 17640, 17641, 17642, 17643, 18039, 21795, 24285, 24329, 27251, 33498, 35449, 36815, 36816, 37426, 40110 };
 
 	/**
 	 * Represents the animation used when cooking over a range.
@@ -45,6 +49,7 @@ public final class BurnMeatPlugin extends UseWithHandler {
 		for (int id : OBJECTS) {
 			addHandler(id, OBJECT_TYPE, this);
 		}
+		System.out.println("Burned meat plugin successfully initialized");
 		return this;
 	}
 
@@ -53,11 +58,14 @@ public final class BurnMeatPlugin extends UseWithHandler {
 		final Player player = event.getPlayer();
 		final Food food = Consumables.forFood(event.getUsedItem());
 		final GameObject object = (GameObject) event.getUsedWith();
+		final Item usedItem = event.getUsedItem();
 		if (food.getBurnt() == null) {
 			player.getPacketDispatch().sendMessage("You can't burn this piece of food.");
 			return true;
 		}
-		if (player.getInventory().remove(event.getUsedItem())) {
+		player.debug("Used Item: " + usedItem + " In inventory? " + player.getInventory().containsItem(usedItem));
+		if (player.getInventory().containsItem(usedItem)) {
+			player.getInventory().remove(usedItem);
 			player.lock(3);
 			player.animate(!object.getName().toLowerCase().equals("fire") ? RANGE_ANIMATION : FIRE_ANIMATION);
 			player.getInventory().add(food.getBurnt());

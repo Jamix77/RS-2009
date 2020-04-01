@@ -1134,7 +1134,7 @@ public final class WizardTowerPlugin extends OptionHandler {
 				stage = 911;
 				break;
 			case 911:
-				interpreter.sendDialogues(npc, null, "or these elemental altars. This is where you and", "Aubury come into this stroy. A few weeks back,", "Aubury discovered in a standard delivery of runes", "to his store, a parchment detailing a");
+				interpreter.sendDialogues(npc, null, "or these elemental altars. This is where you and", "Aubury come into this story. A few weeks back,", "Aubury discovered in a standard delivery of runes", "to his store, a parchment detailing a");
 				stage = 912;
 				break;
 			case 912:
@@ -1531,7 +1531,7 @@ public final class WizardTowerPlugin extends OptionHandler {
 			npc = (NPC) args[0];
 			final Quest quest = player.getQuestRepository().getQuest("Rune Mysteries");
 			if (quest.getStage(player) == 40) {
-				interpreter.sendDialogues(npc, null, "My gratitude to you adventurer for bringing me these", "research notes. I notice that you brought the head", "wizard a speical talisman that was the key to our finally", "unlocking the puzzle.");
+				interpreter.sendDialogues(npc, null, "My gratitude to you adventurer for bringing me these", "research notes. I notice that you brought the head", "wizard a special talisman that was the key to our finally", "unlocking the puzzle.");
 				stage = 900;
 				return true;
 			}

@@ -44,6 +44,7 @@ public final class OziachDialogue extends DialoguePlugin {
 	public boolean open(Object... args) {
 		npc = (NPC) args[0];
 		quest = player.getQuestRepository().getQuest("Dragon Slayer");
+		player.debug("" + quest.getStage(player));
 		switch (quest.getStage(player)) {
 		case 100:
 			npc("Aye, 'tis a fair day, my mighty dragon-slaying friend.");
@@ -94,6 +95,9 @@ public final class OziachDialogue extends DialoguePlugin {
 		case 20:
 			if (stage == -1) {
 				end();
+			} else {
+				end();
+				break;
 			}
 			break;
 		case 100:
@@ -232,7 +236,7 @@ public final class OziachDialogue extends DialoguePlugin {
 			case 0:
 				if (!player.getInventory().containsItem(DragonSlayer.ELVARG_HEAD)) {
 					player("Nope, not yet.");
-					stage = 1;
+					stage = -1;
 					return true;
 				}
 				player("Yes, I have!");
@@ -247,7 +251,7 @@ public final class OziachDialogue extends DialoguePlugin {
 				stage = 4;
 				break;
 			case 4:
-				npc("I underestimated ye, adventurer. I apoligize.");
+				npc("I underestimated ye, adventurer. I apologize.");
 				stage = 5;
 				break;
 			case 5:
@@ -256,7 +260,7 @@ public final class OziachDialogue extends DialoguePlugin {
 				break;
 			case 6:
 				end();
-				if (player.getInventory().remove(DragonSlayer.ELVARG_HEAD)) {
+				if (player.getInventory().remove(DragonSlayer.ELVARG_HEAD) && !player.getQuestRepository().getQuest("Dragon Slayer").isCompleted(player)) {
 					quest.finish(player);
 				}
 				break;

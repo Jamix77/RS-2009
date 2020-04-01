@@ -11,6 +11,7 @@ import org.crandor.game.interaction.OptionHandler;
 import org.crandor.game.node.Node;
 import org.crandor.game.node.entity.npc.NPC;
 import org.crandor.game.node.entity.player.Player;
+import org.crandor.game.node.entity.state.impl.DoubleOrePulse;
 import org.crandor.game.node.item.Item;
 import org.crandor.game.node.object.GameObject;
 import org.crandor.game.node.object.ObjectBuilder;
@@ -20,11 +21,11 @@ import org.crandor.game.system.task.Pulse;
 import org.crandor.game.world.GameWorld;
 import org.crandor.game.world.map.Location;
 import org.crandor.game.world.repository.Repository;
+import org.crandor.plugin.InitializablePlugin;
 import org.crandor.plugin.Plugin;
 import org.crandor.plugin.PluginManager;
 import org.crandor.plugin.PluginManifest;
 import org.crandor.plugin.PluginType;
-import org.crandor.plugin.InitializablePlugin;
 import org.crandor.tools.RandomFunction;
 
 /**
@@ -43,7 +44,7 @@ public class ShootingStarPlugin extends OptionHandler {
 		{"Crafting Guild", Location.create(2940, 3280, 0)},
 		{"Falador East Bank", Location.create(3030, 3349, 0)},
 		{"Rimmington mining site", Location.create(2975, 3237, 0)},
-		{"Falador mining site", Location.create(2975, 3240, 0)},
+		{"Rimmington mine", Location.create(2975, 3240, 0)},
 		{"Karamja mining site", Location.create(2737, 3223, 0)},
 		{"Brimhaven mining site", Location.create(2743, 3143, 0)},
 		{"South Crandor mining site", Location.create(2822, 3239, 0)},
@@ -57,17 +58,22 @@ public class ShootingStarPlugin extends OptionHandler {
 		{"Duel Arena bank chest", Location.create(3342, 3267, 0)},
 		{"Nardah mining site", Location.create(3320, 2872, 0)},
 		{"Nardah bank", Location.create(3434, 2888, 0)},
-		{"South-east Varrock mining site", Location.create(3292, 3353, 0)},
-		{"South-west Varrock mining site", Location.create(3176, 3362, 0)},
+		{"South-east Varrock mine", Location.create(3292, 3353, 0)},
+		{"South-west Varrock mine", Location.create(3176, 3362, 0)},
 		{"Varrock east bank", Location.create(3259, 3407, 0)},
-		{"Lumbridge Swamp mining site", Location.create(3227, 3150, 0)},
+		{"Lumbridge Swamp mine", Location.create(3227, 3150, 0)},
 		{"Gnome stronghold Bank", Location.create(2460, 3432, 0)},
 		{"North Edgeville mining site", Location.create(3101, 3569, 0)},
-		{"Southern wilderness mining site", Location.create(3025, 3591, 0)},
-		{"Pirates' Hideout mining site", Location.create(3059, 3940, 0)},
+		{"Southern wilderness mine", Location.create(3025, 3591, 0)},
+		{"Pirates' Hideout mine", Location.create(3059, 3940, 0)},
 		{"Lava Maze mining site", Location.create(3062, 3885, 0)},
 		{"Mage Arena bank", Location.create(3093, 3962, 0)}
 	};
+
+	/**
+	 * Checks whether or not a discovery/first mine award has been given
+	 */
+	public static boolean isDiscovered = false;
 
 	/**
 	 * The star dust item id.
@@ -107,6 +113,7 @@ public class ShootingStarPlugin extends OptionHandler {
 	/**
 	 * The star updating pulse.
 	 */
+
 	private static final Pulse pulse = new Pulse(1) {
 
 		@Override
@@ -343,6 +350,7 @@ public class ShootingStarPlugin extends OptionHandler {
 				object = null;
 				crashSite = null;
 				ticks = 0;
+				isDiscovered = false;
 			}
 		}
 
@@ -469,14 +477,25 @@ public class ShootingStarPlugin extends OptionHandler {
 
 		@Override
 		public boolean checkRequirements() {
+			tool = SkillingTool.getPickaxe(player);
 			if (star == null || object == null || !object.isActive()) {
 				return false;
+			}
+			//checks if the star has been discovered and if not, awards the bonus xp. Xp can be awarded regardless of mining level as per the wiki.
+			if(!isDiscovered) {
+				player.getSkills().addExperience(Skills.MINING, 75 * player.getSkills().getStaticLevel(Skills.MINING));
+				Repository.sendNews(player.getUsername() + " is the discoverer of the crashed star near " + crashSite + "!");
+				isDiscovered = true;
+				if (player.getSkills().getLevel(Skills.MINING) < star.getMiningLevel()) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 			if (player.getSkills().getLevel(Skills.MINING) < star.getMiningLevel()) {
 				player.getDialogueInterpreter().sendDialogue("You need a Mining level of at least " + star.getMiningLevel() + " in order to mine this layer.");
 				return false;
 			}
-			tool = SkillingTool.getPickaxe(player);
 			if (tool == null) {
 				player.getPacketDispatch().sendMessage("You do not have a pickaxe to use.");
 				return false;
@@ -506,7 +525,10 @@ public class ShootingStarPlugin extends OptionHandler {
 			} else {
 				star.incrementStardust();
 			}
-			player.getInventory().add(new Item(STAR_DUST, 1));
+			
+			if (ShootingStarPlugin.getStarDust(player) < 200) { 
+				player.getInventory().add(new Item(STAR_DUST, 1));
+			}
 			player.getSkills().addExperience(Skills.MINING, star.getExp());
 			if (star.getMinedStardust() >= star.getTotalStardust()) {
 				Location loc = object.getLocation();
@@ -734,18 +756,23 @@ public class ShootingStarPlugin extends OptionHandler {
 				end();
 				break;
 			case 50:
-				int dust = player.getInventory().getAmount(STAR_DUST);
+				int dust = player.getInventory().getAmount(STAR_DUST) > 200 ? 200 : player.getInventory().getAmount(STAR_DUST);
 				if (player.getInventory().remove(new Item(STAR_DUST, dust))) {
 					int cosmicRunes = (int) (Math.ceil(0.76 * dust) * AMPLIFIER);
 					int astralRunes = (int) (Math.ceil(0.26 * dust) * AMPLIFIER);
 					int goldOre = (int) (Math.ceil(0.1 * dust) * AMPLIFIER);
-					int coins = (int) (Math.ceil(50.1 * dust) * AMPLIFIER);
+					int coins = (int) (Math.ceil(250.0 * dust) * AMPLIFIER); // limits the amount of gp per turn-in to 90k, same as 2009 rs, and minimum from all stardust from a level 1 star works out to 50k, same as rs in 2009
 					player.getInventory().add(new Item(COSMIC_RUNE, cosmicRunes), player);
 					player.getInventory().add(new Item(ASTRAL_RUNE, astralRunes), player);
 					player.getInventory().add(new Item(GOLD_ORE, goldOre), player);
 					player.getInventory().add(new Item(COINS, coins), player);
 					npc("I have rewarded you by making it so you can mine", "extra ore for the next 15 minutes. Also, have " + cosmicRunes, "cosmic runes, " + astralRunes + " astral runes, " + goldOre + " gold ore and " + coins, "coins.");
+					player.setAttribute("SS Mining Bonus",System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(15));
 					player.getSavedData().getGlobalData().setStarSpriteDelay(System.currentTimeMillis() + TimeUnit.DAYS.toMillis(1));
+					int endTick = GameWorld.getTicks() + 1500;
+					player.setAttribute("SS Mining Bonus",endTick);
+					DoubleOrePulse orePulse = new DoubleOrePulse(player,endTick,GameWorld.getTicks());
+					orePulse.run();
 				}
 				stage = 52;
 				break;
