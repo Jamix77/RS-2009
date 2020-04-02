@@ -17,7 +17,6 @@ import org.crandor.game.world.map.RegionManager;
 import org.crandor.game.world.update.flag.context.Animation;
 import org.crandor.game.world.update.flag.player.FaceLocationFlag;
 import org.crandor.tools.RandomFunction;
-import plugin.interaction.item.brawling_gloves.BrawlingGloves;
 
 /**
  * Represents the pulse used to light a log.
@@ -140,6 +139,7 @@ public final class FireMakingPulse extends SkillPulse<Item> {
 		ObjectBuilder.add(object, fire.getLife(), getAsh(player, fire, object));
 		GroundItemManager.destroy(groundItem);
 		player.moveStep();
+<<<<<<< HEAD
 		double experience = fire.getXp();
 		//handle firemaking brawlers
 		if(player.getEquipment().containsItem(new Item (BrawlingGloves.FIREMAKING.getId()))){
@@ -147,6 +147,9 @@ public final class FireMakingPulse extends SkillPulse<Item> {
 			player.getBrawlingGloveManager().updateCharges(BrawlingGloves.FIREMAKING.getId(),1);
 		}
 		player.getSkills().addExperience(Skills.FIREMAKING, experience, true);
+=======
+		player.getSkills().addExperience(Skills.FIREMAKING, fire.getXp(), true);
+>>>>>>> parent of db25b8b1... Added brawling gloves & full glove functionality
 		player.faceLocation(FaceLocationFlag.getFaceLocation(player, object));
 		if (TutorialSession.getExtension(player).getStage() == 9) {
 			TutorialStage.load(player, 10, false);

@@ -90,7 +90,7 @@ public enum TutorialStage {
 			player.getConfigManager().set(406, 2);
 			
 			player.setAttribute("tut-island:hi_slot", HintIconManager.registerHintIcon(player, Repository.findNPC(7965)));
-			Component.setUnclosable(player, player.getDialogueInterpreter().sendPlaneMessageWithBlueTitle("", "If you hover your cursor over an attackable character in RuneScape, their", "Combat level will appear in the top-left corner of the game screen.", "Try it by rotating the camera (using the arrow keys on your keyboard) until", "you can see the goblin.", "Hover your mouse over him and you'll see his Combat level. Click to attack the goblin."));
+			player.getDialogueInterpreter().sendPlainMessage(false,"If you hover your cursor over an attackable character in RuneScape, their", "Combat level will appear in the top-left corner of the game screen.", "Try it by rotating the camera (using the arrow keys on your keyboard) until", "you can see the goblin.", "Hover your mouse over him and you'll see his Combat level. Click to attack the goblin.");
 		}
 	},
 	STAGE_5(5) {
